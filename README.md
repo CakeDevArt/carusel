@@ -27,6 +27,20 @@ docker-compose up --build
 
 После запуска сервисы будут доступны примерно через 20–30 секунд.
 
+**Автозапуск после перезагрузки сервера**
+
+Контейнеры имеют `restart: unless-stopped` — Docker перезапустит их после ребута.
+
+Чтобы проект поднимался автоматически при загрузке системы (если ещё не запущен):
+
+```bash
+sudo cp carousel.service /etc/systemd/system/
+# Отредактируй WorkingDirectory в /etc/systemd/system/carousel.service
+sudo systemctl daemon-reload
+sudo systemctl enable carousel
+sudo systemctl start carousel
+```
+
 сервис	адрес
 Frontend	http://localhost:3090
 Backend API	http://localhost:8090

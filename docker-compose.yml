@@ -1,6 +1,7 @@
 services:
   postgres:
     image: postgres:15-alpine
+    restart: unless-stopped
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-carousel}
       POSTGRES_USER: ${POSTGRES_USER:-carousel}
@@ -17,6 +18,7 @@ services:
 
   minio:
     image: quay.io/minio/minio:latest
+    restart: unless-stopped
     command: server /data --console-address ":9001"
     environment:
       MINIO_ROOT_USER: ${S3_ACCESS_KEY}
@@ -52,6 +54,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
+    restart: unless-stopped
     ports:
       - "${BACKEND_PORT:-8090}:8000"
     env_file:
@@ -79,6 +82,7 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+    restart: unless-stopped
     ports:
       - "${FRONTEND_PORT:-3090}:3000"
     env_file:
