@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+{{ base_css }}
+
+.classic .slide-body {
+    padding: {{ padding }}px;
+    justify-content: {{ 'flex-start' if align_v == 'top' else ('center' if align_v == 'center' else 'flex-end') }};
+    text-align: {{ align_h }};
+}
+
+.classic .slide-title {
+    font-size: 56px;
+    font-weight: 700;
+    margin-bottom: 32px;
+    line-height: 1.2;
+    color: #1a1a2e;
+}
+
+.classic .slide-text {
+    font-size: 38px;
+    line-height: 1.5;
+    color: #333;
+}
+
+.classic .slide-footer-text {
+    font-size: 28px;
+    color: #666;
+    margin-top: 24px;
+    font-style: italic;
+}
+</style>
+</head>
+<body>
+<div class="slide classic">
+    <div class="slide-bg" style="background-color: {{ bg_color }};">
+        {% if bg_image_b64 %}
+        <img class="slide-bg-image" src="{{ bg_image_b64 }}" />
+        {% endif %}
+        {% if bg_dim > 0 %}
+        <div class="slide-bg-dim" style="background: rgba(0,0,0,{{ bg_dim }});"></div>
+        {% endif %}
+    </div>
+    <div class="slide-content">
+        {% if header_enabled and header_text %}
+        <div class="slide-header" style="text-align: {{ align_h }}; color: {{ '#fff' if bg_dim > 0.3 else '#555' }};">{{ header_text }}</div>
+        {% endif %}
+        <div class="slide-body">
+            <div class="slide-title" style="{{ 'color: #fff;' if bg_dim > 0.3 else '' }}">{{ slide.title }}</div>
+            <div class="slide-text" style="{{ 'color: #eee;' if bg_dim > 0.3 else '' }}">{{ slide.body }}</div>
+            {% if slide.footer %}
+            <div class="slide-footer-text" style="{{ 'color: #ccc;' if bg_dim > 0.3 else '' }}">{{ slide.footer }}</div>
+            {% endif %}
+        </div>
+        {% if footer_enabled and footer_text %}
+        <div class="slide-footer" style="text-align: {{ align_h }}; color: {{ '#ccc' if bg_dim > 0.3 else '#888' }};">{{ footer_text }}</div>
+        {% endif %}
+    </div>
+    <div class="slide-number" style="{{ 'color: #999;' if bg_dim > 0.3 else '' }}">{{ slide_index }}/{{ total_slides }}</div>
+</div>
+</body>
+</html>
