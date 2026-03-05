@@ -38,11 +38,12 @@ def _build_slide_html(slide: Slide, design: dict, slide_index: int, total_slides
     footer_text = design.get("footer_text", "")
 
     bg_image_b64 = ""
-    bg_asset_id = design.get("bg_asset_id")
-    if bg_asset_id:
+    bg_asset_s3_key = design.get("bg_asset_s3_key")
+    bg_content_type = design.get("bg_asset_content_type", "image/jpeg")
+    if bg_asset_s3_key:
         try:
-            img_bytes = download_file(f"bg/{bg_asset_id}")
-            bg_image_b64 = f"data:image/jpeg;base64,{base64.b64encode(img_bytes).decode()}"
+            img_bytes = download_file(bg_asset_s3_key)
+            bg_image_b64 = f"data:{bg_content_type};base64,{base64.b64encode(img_bytes).decode()}"
         except Exception as e:
             logger.warning("Could not load bg image: %s", e)
 
@@ -79,12 +80,14 @@ async def render_slide_png(html: str, out_path: str, width: int = 1080, height: 
         await browser.close()
 
 
-async def render_carousel_zip(slides: list[Slide], design: dict) -> bytes:
+async def render_carousel_zip(slides: list[Slide], designs: list[dict]) -> bytes:
+    """designs[i] — настройки дизайна для slides[i]"""
     total = len(slides)
     buf = io.BytesIO()
 
     with tempfile.TemporaryDirectory(prefix="carousel_render_") as tmpdir:
         for i, slide in enumerate(slides):
+            design = designs[i] if i < len(designs) else {}
             html = _build_slide_html(slide, design, i + 1, total)
             png_path = os.path.join(tmpdir, f"slide_{i + 1:02d}.png")
             await render_slide_png(html, png_path)

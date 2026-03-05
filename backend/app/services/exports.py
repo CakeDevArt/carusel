@@ -53,8 +53,25 @@ async def run_export(export_id: uuid.UUID) -> None:
             if not slides:
                 raise ValueError("No slides to export")
 
-            design = carousel.design or {}
-            zip_bytes = await render_carousel_zip(slides, design)
+            carousel_design = dict(carousel.design or {})
+            designs = []
+
+            for slide in slides:
+                slide_design = dict(slide.design or {})
+                effective = {**carousel_design, **slide_design}
+                bg_asset_id = effective.get("bg_asset_id")
+                if bg_asset_id:
+                    try:
+                        aid = uuid.UUID(str(bg_asset_id)) if isinstance(bg_asset_id, str) else bg_asset_id
+                        asset = await db.get(Asset, aid)
+                        if asset:
+                            effective["bg_asset_s3_key"] = asset.s3_key
+                            effective["bg_asset_content_type"] = asset.content_type or "image/jpeg"
+                    except (ValueError, TypeError):
+                        pass
+                designs.append(effective)
+
+            zip_bytes = await render_carousel_zip(slides, designs)
 
             s3_key = generate_asset_key("export_zip", "zip")
             upload_file(zip_bytes, s3_key, "application/zip")

@@ -16,6 +16,7 @@ class SlideUpdate(BaseModel):
     title: Optional[str] = Field(None, max_length=200)
     body: Optional[str] = None
     footer: Optional[str] = Field(None, max_length=200)
+    design: Optional[dict] = None
 
 
 class SlideReorder(BaseModel):
@@ -29,5 +30,6 @@ class SlideOut(BaseModel):
     title: str
     body: str
     footer: Optional[str]
+    design: Optional[dict] = None
 
     model_config = {"from_attributes": True}

@@ -12,45 +12,42 @@
 }
 
 .bold-slide .slide-title {
-    font-size: 72px;
+    font-size: 56px;
     font-weight: 900;
-    margin-bottom: 40px;
-    line-height: 1.1;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    color: #ff6b35;
+    margin-bottom: 32px;
+    line-height: 1.2;
+    color: #1a1a2e;
 }
 
 .bold-slide .slide-text {
-    font-size: 40px;
+    font-size: 38px;
     line-height: 1.5;
-    font-weight: 500;
-    color: #fff;
+    font-weight: 700;
+    color: #1a1a2e;
 }
 
 .bold-slide .slide-footer-text {
-    font-size: 30px;
-    color: #ff6b35;
-    margin-top: 32px;
+    font-size: 28px;
+    color: #333;
+    margin-top: 24px;
     font-weight: 700;
-    text-transform: uppercase;
 }
 
 .bold-slide .slide-header {
-    color: #ff6b35 !important;
+    color: #1a1a2e !important;
     font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 3px;
 }
 </style>
 </head>
 <body>
 <div class="slide bold-slide">
-    <div class="slide-bg" style="background-color: {{ bg_color if bg_color != '#ffffff' else '#1a1a2e' }};">
+    <div class="slide-bg" style="background-color: {{ bg_color }};">
         {% if bg_image_b64 %}
         <img class="slide-bg-image" src="{{ bg_image_b64 }}" />
         {% endif %}
-        <div class="slide-bg-dim" style="background: rgba(0,0,0,{{ bg_dim if bg_dim > 0 else 0.5 }});"></div>
+        {% if bg_dim > 0 %}
+        <div class="slide-bg-dim" style="background: rgba(0,0,0,{{ bg_dim }});"></div>
+        {% endif %}
     </div>
     <div class="slide-content">
         {% if header_enabled and header_text %}
@@ -64,7 +61,7 @@
             {% endif %}
         </div>
         {% if footer_enabled and footer_text %}
-        <div class="slide-footer" style="text-align: {{ align_h }}; color: #ff6b35;">{{ footer_text }}</div>
+        <div class="slide-footer" style="text-align: {{ align_h }}; color: #333;">{{ footer_text }}</div>
         {% endif %}
     </div>
     <div class="slide-number" style="color: #666;">{{ slide_index }}/{{ total_slides }}</div>

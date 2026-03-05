@@ -1,7 +1,7 @@
 import uuid
 
 from sqlalchemy import String, Integer, Text, ForeignKey
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.db import Base
@@ -16,5 +16,6 @@ class Slide(Base):
     title: Mapped[str] = mapped_column(String(200), nullable=False, default="")
     body: Mapped[str] = mapped_column(Text, nullable=False, default="")
     footer: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    design: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
 
     carousel = relationship("Carousel", back_populates="slides")

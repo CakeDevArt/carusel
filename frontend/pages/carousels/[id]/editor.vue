@@ -65,14 +65,37 @@ function closeSSE() {
   expEventSource = null
 }
 
+const defaultDesign = () => ({
+  template: 'classic',
+  bg_color: '#ffffff',
+  bg_asset_id: null as string | null,
+  bg_dim: 0,
+  padding: 40,
+  align_h: 'left',
+  align_v: 'top',
+  header_enabled: false,
+  header_text: '',
+  footer_enabled: false,
+  footer_text: '',
+})
+
+function syncDesignFromSlide() {
+  const s = slides.value[currentSlide.value]
+  const carouselDesign = carousel.value?.design || {}
+  const slideDesign = s?.design || {}
+  Object.assign(design.value, defaultDesign(), carouselDesign, slideDesign)
+}
+
 async function loadData() {
   loading.value = true
   try {
     carousel.value = await api.get(`/carousels/${carouselId}`)
-    if (carousel.value.design) {
-      Object.assign(design.value, carousel.value.design)
-    }
     slides.value = await api.get(`/carousels/${carouselId}/slides`)
+    if (slides.value.length > 0) {
+      syncDesignFromSlide()
+    } else {
+      Object.assign(design.value, defaultDesign(), carousel.value?.design || {})
+    }
   } catch (e: any) {
     error.value = e.message
   } finally {
@@ -166,12 +189,16 @@ async function saveSlide() {
 }
 
 async function saveDesign() {
+  const s = slides.value[currentSlide.value]
+  if (!s) return
   savingDesign.value = true
   try {
-    await api.patch(`/carousels/${carouselId}/design`, {
-      design: design.value,
-      apply_to_all: true,
+    await api.patch(`/carousels/${carouselId}/slides/${s.id}`, {
+      design: { ...design.value },
     })
+    if (slides.value[currentSlide.value]) {
+      slides.value[currentSlide.value].design = { ...design.value }
+    }
   } catch (e: any) {
     error.value = e.message
   } finally {
@@ -354,7 +381,6 @@ const previewStyle = computed(() => {
     backgroundColor: d.bg_color,
     padding: `${d.padding}px`,
     textAlign: d.align_h,
-    justifyContent: d.align_v === 'top' ? 'flex-start' : d.align_v === 'center' ? 'center' : 'flex-end',
   }
   if (d.bg_asset_id) {
     style.backgroundImage = `url(${api.baseURL}/assets/${d.bg_asset_id})`
@@ -362,6 +388,13 @@ const previewStyle = computed(() => {
     style.backgroundPosition = 'center'
   }
   return style
+})
+
+const previewBodyStyle = computed(() => {
+  const d = design.value
+  return {
+    justifyContent: d.align_v === 'top' ? 'flex-start' : d.align_v === 'center' ? 'center' : 'flex-end',
+  }
 })
 
 const templateNames: Record<string, string> = {
@@ -381,6 +414,10 @@ const alignVLabels: Record<string, string> = {
   center: 'Центр',
   bottom: 'Низ',
 }
+
+watch(currentSlide, () => {
+  if (slides.value.length > 0) syncDesignFromSlide()
+})
 
 onMounted(loadData)
 onUnmounted(closeSSE)
@@ -486,7 +523,7 @@ onUnmounted(closeSSE)
                 <div v-if="design.header_enabled && design.header_text" class="preview-header">
                   {{ design.header_text }}
                 </div>
-                <div class="preview-body">
+                <div class="preview-body" :style="previewBodyStyle">
                   <div class="preview-title">{{ currentSlideData?.title }}</div>
                   <div class="preview-text">{{ currentSlideData?.body }}</div>
                   <div v-if="currentSlideData?.footer" class="preview-footer-text">
@@ -519,6 +556,7 @@ onUnmounted(closeSSE)
         </div>
 
         <div class="editor-panel">
+          <div class="panel-hint">Настройки для слайда {{ currentSlide + 1 }}</div>
           <div class="panel-tabs">
             <button :class="['ptab', activePanel === 'template' && 'ptab-active']" @click="activePanel = 'template'">Шаблон</button>
             <button :class="['ptab', activePanel === 'bg' && 'ptab-active']" @click="activePanel = 'bg'">Фон</button>
@@ -788,9 +826,10 @@ onUnmounted(closeSSE)
 }
 
 .tpl-bold .preview-title {
-  font-size: 24px; text-transform: uppercase; letter-spacing: 1px; color: #ff6b35;
+  font-weight: 900; color: #1a1a2e;
 }
-.tpl-bold .preview-text { color: #fff; font-weight: 500; }
+.tpl-bold .preview-text { font-weight: 700; color: #1a1a2e; }
+.tpl-bold .preview-footer-text { font-weight: 700; color: #333; }
 .tpl-minimal .preview-title { font-weight: 300; font-size: 20px; }
 .tpl-minimal .preview-text { font-weight: 300; line-height: 1.7; }
 
@@ -818,6 +857,11 @@ onUnmounted(closeSSE)
 .editor-panel {
   background: var(--card); border-radius: var(--radius);
   box-shadow: var(--shadow); overflow: hidden;
+}
+
+.panel-hint {
+  font-size: 12px; color: var(--text-secondary); padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
 }
 
 .panel-tabs {

@@ -127,6 +127,8 @@ async def api_update_slide(
         kwargs["body"] = body.body
     if body.footer is not None:
         kwargs["footer"] = body.footer
+    if body.design is not None:
+        kwargs["design"] = body.design
     return await update_slide(db, slide, **kwargs)
 
 
